@@ -31,28 +31,23 @@ public class ThreadingNoThread extends JFrame {
 
     setVisible(true);
     addListeners();
+    revalidate();
   }
 
   public void addListeners() {
     colorBtn.addActionListener(
-      new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+      (ActionEvent e) -> {
           if (colorField.getBackground() == Color.GREEN) {
             colorField.setBackground(Color.ORANGE);
           } else {
             colorField.setBackground(Color.GREEN);
           }
-        }
       }
     );
 
     calcBtn.addActionListener(
-      new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+      (ActionEvent e) -> {
           calculate();
-        }
       }
     );
   }

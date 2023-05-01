@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -217,40 +218,31 @@ class AppFrame extends JFrame {
     clearButton = footer.getClearButton();
 
     addListeners();
+    revalidate();
   }
 
   public void addListeners() {
-    addButton.addMouseListener(
-      new MouseAdapter() {
-        @override
-        public void mousePressed(MouseEvent e) {
+    addButton.addActionListener(
+      (ActionEvent e) -> {
           Task task = new Task();
           list.add(task); // Add new task to list
           list.updateNumbers(); // Updates the numbers of the tasks
-
           JButton doneButton = task.getDone();
-          doneButton.addMouseListener(
-            new MouseAdapter() {
-              @override
-              public void mousePressed(MouseEvent e) {
+          doneButton.addActionListener(
+            (ActionEvent e2) -> {
                 task.changeState(); // Change color of task
                 list.updateNumbers(); // Updates the numbers of the tasks
                 revalidate(); // Updates the frame
               }
-            }
           );
-        }
       }
     );
 
-    clearButton.addMouseListener(
-      new MouseAdapter() {
-        @override
-        public void mousePressed(MouseEvent e) {
+    clearButton.addActionListener(
+      (ActionEvent e) -> {
           list.removeCompletedTasks(); // Removes all tasks that are done
           repaint(); // Repaints the list
         }
-      }
     );
   }
 }

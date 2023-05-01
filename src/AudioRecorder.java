@@ -38,23 +38,19 @@ public class AudioRecorder extends JFrame {
 
     audioFormat = getAudioFormat();
     addListeners();
+    revalidate();
   }
 
   public void addListeners() {
     startButton.addActionListener(
-      new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+      (ActionEvent e) -> {
           startRecording();
-        }
       }
     );
+    
     stopButton.addActionListener(
-      new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+      (ActionEvent e) -> {
           stopRecording();
-        }
       }
     );
   }

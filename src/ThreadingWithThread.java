@@ -32,43 +32,35 @@ public class ThreadingWithThread extends JFrame {
 
     setVisible(true);
     addListeners();
+    revalidate();
   }
 
   public void addListeners() {
     colorBtn.addActionListener(
-      new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-          if (colorField.getBackground() == Color.GREEN) {
-            colorField.setBackground(Color.ORANGE);
-          } else {
-            colorField.setBackground(Color.GREEN);
-          }
+      (ActionEvent e) -> {
+        if (colorField.getBackground() == Color.GREEN) {
+          colorField.setBackground(Color.ORANGE);
+        } else {
+          colorField.setBackground(Color.GREEN);
         }
       }
     );
 
     calcBtn.addActionListener(
-      new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+      (ActionEvent e) -> {
           calculate();
-        }
       }
     );
   }
 
   private void calculate() {
     Thread t = new Thread(
-      new Runnable() {
-        @Override
-        public void run() {
-          try {
-            calcField.setText("Please Wait...");
-            Thread.sleep(5 * 1000);
-          } catch (InterruptedException e1) {}
-          calcField.setText("Computation complete!");
-        }
+      () -> {
+        try {
+          calcField.setText("Please Wait...");
+          Thread.sleep(5 * 1000);
+        } catch (InterruptedException e1) {}
+        calcField.setText("Computation complete!");
       }
     );
     t.start();

@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -76,10 +78,18 @@ class Task extends JPanel {
   }
 
   public void changeState() {
-    this.setBackground(green);
-    taskName.setBackground(green);
-    markedDone = true;
-    revalidate();
+    if (markedDone) {
+      // markUndone
+      this.setBackground(gray);
+      taskName.setBackground(gray);
+      markedDone = false;
+      revalidate();
+    } else {
+      this.setBackground(green);
+      taskName.setBackground(green);
+      markedDone = true;
+      revalidate();
+    }
   }
 }
 
@@ -117,28 +127,56 @@ class List extends JPanel {
     }
   }
 
-  // TODO: Complete this method
   /**
    * Loads tasks from a file called "tasks.txt"
    * @return an ArrayList of Task
+   * @throws IOException
    */
-  public ArrayList<Task> loadTasks() {
-    // hint 1: use try-catch block
-    // hint 2: use BufferedReader and FileReader
-    // hint 3: task.taskName.setText(line) sets the text of the task
-    System.out.println("loadTasks() not implemented");
-    return null;
+  public ArrayList<Task> loadTasks() throws IOException {
+    String fileName = "tasks.txt";
+    ArrayList<Task> taskList = new ArrayList<>();
+
+    try {
+      FileReader file = new FileReader(fileName);
+      BufferedReader in = new BufferedReader(file);
+      String inputLine;
+      while((inputLine = in.readLine()) != null) {
+        Task newTask = new Task();
+        newTask.taskName.setText(inputLine);
+        taskList.add(newTask);
+      }
+      in.close();
+    } catch (FileNotFoundException e) {
+      File file = new File(fileName);
+      file.createNewFile();
+    }
+
+    this.updateNumbers();
+    revalidate();
+    return taskList;
   }
 
-  // TODO: Complete this method
   /**
    * Saves tasks to a file called "tasks.txt"
+   * @throws IOException
    */
-  public void saveTasks() {
-    // hint 1: use try-catch block
-    // hint 2: use FileWriter
-    // hint 3 get list of Tasks using this.getComponents()
-    System.out.println("saveTasks() not implemented");
+  public void saveTasks() throws IOException {
+    String fileName = "tasks.txt";
+    FileWriter fileWriter;
+
+    try {
+      fileWriter = new FileWriter(fileName);
+    } catch (IOException e) {
+      File file = new File(fileName);
+      file.createNewFile();
+      fileWriter = new FileWriter(fileName);
+    }
+
+    for (Component component: this.getComponents()) {
+      fileWriter.write(((Task) component).taskName.getText() + '\n');
+    }
+
+    fileWriter.close();
   }
 }
 
@@ -146,8 +184,8 @@ class Footer extends JPanel {
 
   JButton addButton;
   JButton clearButton;
-  // TODO: Add a JButton called "loadButton" to load tasks from a file
-  // TODO: Add a JButton called "saveButton" to save tasks to a file
+  JButton loadButton;
+  JButton saveButton;
 
   Color backgroundColor = new Color(240, 248, 255);
   Border emptyBorder = BorderFactory.createEmptyBorder();
@@ -155,7 +193,10 @@ class Footer extends JPanel {
   Footer() {
     this.setPreferredSize(new Dimension(400, 60));
     this.setBackground(backgroundColor);
-    // TODO: Set the layout of the footer to a GridLayout with 1 row and 4 columns
+
+    // Set the layout of the footer to a GridLayout with 1 row and 4 columns
+    GridLayout layout = new GridLayout(1, 4);
+    this.setLayout(layout); // 10 tasks
 
     addButton = new JButton("Add Task"); // add task button
     addButton.setFont(new Font("Sans-serif", Font.ITALIC, 10)); // set font
@@ -164,7 +205,14 @@ class Footer extends JPanel {
     clearButton = new JButton("Clear finished"); // clear button
     clearButton.setFont(new Font("Sans-serif", Font.ITALIC, 10)); // set font
     this.add(clearButton); // add to footer
-    // TODO: Create loadButton and saveButton and add to footer
+
+    loadButton = new JButton("Load Tasks");
+    loadButton.setFont(new Font("Sans-serif", Font.ITALIC, 10)); // set font
+    this.add(loadButton); // add to footer
+
+    saveButton = new JButton("Save Tasks");
+    saveButton.setFont(new Font("Sans-serif", Font.ITALIC, 10)); // set font
+    this.add(saveButton); // add to footer
   }
 
   public JButton getAddButton() {
@@ -174,7 +222,14 @@ class Footer extends JPanel {
   public JButton getClearButton() {
     return clearButton;
   }
-  // TODO: Add getters for loadButton and saveButton
+
+  public JButton getLoadButton() {
+    return loadButton;
+  }
+
+  public JButton getSaveButton() {
+    return saveButton;
+  }
 }
 
 class Header extends JPanel {
@@ -200,6 +255,8 @@ class AppFrame extends JFrame {
 
   private JButton addButton;
   private JButton clearButton;
+  private JButton loadButton;
+  private JButton saveButton;
 
   AppFrame() {
     this.setSize(400, 600); // 400 width and 600 height
@@ -216,12 +273,45 @@ class AppFrame extends JFrame {
 
     addButton = footer.getAddButton();
     clearButton = footer.getClearButton();
+    loadButton = footer.getLoadButton();
+    saveButton = footer.getSaveButton();
 
     addListeners();
     revalidate();
   }
 
   public void addListeners() {
+    loadButton.addActionListener(
+      (ActionEvent e) -> {
+        try {
+          for (Task task: list.loadTasks()) {
+            list.add(task);
+            list.updateNumbers(); // Updates the numbers of the tasks
+            JButton doneButton = task.getDone();
+            doneButton.addActionListener(
+              (ActionEvent e2) -> {
+                  task.changeState(); // Change color of task
+                  list.updateNumbers(); // Updates the numbers of the tasks
+                  revalidate(); // Updates the frame
+                }
+            );
+          }
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+    );
+
+    saveButton.addActionListener(
+      (ActionEvent e) -> {
+        try {
+          list.saveTasks();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+    );
+
     addButton.addActionListener(
       (ActionEvent e) -> {
           Task task = new Task();
